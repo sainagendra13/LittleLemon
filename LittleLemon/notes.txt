@@ -1,0 +1,447 @@
+admin (Superuser):
+username: admin
+password admin@123!
+
+
+manager1(manager)
+username : manager1
+password: password@123!
+
+
+manager2 (delivery crew)
+username:  manager2
+password: password@123!
+
+Customer:
+
+{
+ 	"username":"testuser02",
+	"password": "password@123!"
+ }
+ 
+ {
+	"email": "",
+	"username": "testuser02",
+	"id": 6
+}
+
+
+{
+	"auth_token": "e7984e57daeba0e4fc904350a92e29c42f986a3e"
+}
+
+
+
+
+Steps to test:
+
+Help:
+http://127.0.0.1:8000/api/
+
+
+As a Customer:
+
+11. Customers can register 
+
+Choose Username and password
+http://127.0.0.1:8000/api/users/
+
+ POST /api/users/ HTTP/1.1
+> Host: 127.0.0.1:8000
+> User-Agent: insomnia/13.3.0
+> Content-Type: application/json
+> Accept: */*
+> Content-Length: 58
+
+{
+ 	"username":"testuser01",
+	"password": "password@123!"
+ }
+
+12.	Customers can log in using their username and password and get access tokens
+and 5.	Managers can log in 
+ 
+ 
+For login-
+http://127.0.0.1:8000/api/token/login
+
+{
+	"username":"testuser01",
+	"password": "password@123!"
+}
+
+{
+	"auth_token": "9482e588a68a4f3b84aeca6c6d487426468d9b59"
+}
+
+Fetch token
+
+
+
+
+4.	The admin/Manager can add categories
+Required: Manager
+
+http://127.0.0.1:8000/api/categories/
+{
+	"slug": "salad",
+	"title": "Salad"
+}
+
+13.	Customers can browse all categories 
+
+User is Customer
+GET: http://127.0.0.1:8000/api/categories/
+Authorization Token e7984e57daeba0e4fc904350a92e29c42f986a3e
+
+
+6.	Managers can update the item of the day
+
+To create menu-item
+Should have Manager User auth
+http://127.0.0.1:8000/api/menu-items/
+
+> POST /api/menu-items/ HTTP/1.1
+> Host: 127.0.0.1:8000
+> User-Agent: insomnia/13.3.0
+> Authorization: Token 6e06b81092951b0b3e1386cea29ee570bce5040e
+> Content-Type: application/json
+> Accept: */*
+> Content-Length: 104
+
+ {
+     "title": "Eggplant Parmigiana",
+     "price": "16.00",
+     "featured": true,
+     "category_id": 2
+ }
+
+5) Manage Users:
+
+
+> POST /api/groups/manager/users/ HTTP/1.1
+> Host: 127.0.0.1:8000
+> User-Agent: insomnia/13.3.0
+> Authorization: Token 6e06b81092951b0b3e1386cea29ee570bce5040e
+> Content-Type: application/json
+> Accept: */*
+> Content-Length: 58
+
+ {
+ 	"username":"testuser01",
+ 	"password": "password@123!"
+ }
+ 
+ Response:
+ 
+ {
+	"id": 5,
+	"username": "testuser01",
+	"email": ""
+}
+
+6) Manager view Delivery crew:
+GET: 
+http://127.0.0.1:8000/api/groups/delivery-crew/users/
+
+Response:
+
+"results": [
+		{
+			"id": 3,
+			"username": "manager2",
+			"email": "johndoe@littlelemon.com"
+		},
+	]
+
+Manage add User to Delivery crew
+
+POST: 
+http://127.0.0.1:8000/api/groups/delivery-crew/users/
+
+{
+ "username": "testuser01",
+}
+
+Response:
+
+{
+	"count": 2,
+	"next": null,
+	"previous": null,
+	"results": [
+		{
+			"id": 3,
+			"username": "manager2",
+			"email": "johndoe@littlelemon.com"
+		},
+		{
+			"id": 5,
+			"username": "testuser01",
+			"email": ""
+		}
+	]
+}
+
+
+15.	Customers can browse menu items by category
+
+http://127.0.0.1:8000/api/menu-items/?category=2
+
+16.	Customers can paginate menu items
+
+
+http://127.0.0.1:8000/api/menu-items/
+
+
+17.	Customers can sort menu items by price
+
+
+Descending Order:
+http://127.0.0.1:8000/api/menu-items/?ordering=-price
+
+Ascending Order:
+http://127.0.0.1:8000/api/menu-items/?ordering=price
+
+
+18.	Customers can add menu items to the cart
+
+
+POST: 
+http://127.0.0.1:8000/api/cart/menu-items/
+Authorization: Token e7984e57daeba0e4fc904350a92e29c42f986a3e
+
+
+Request Body:
+
+{
+    "menuitem": 5,
+    "quantity": 2
+}
+
+Response
+
+{
+	"id": 1,
+	"menuitem": 5,
+	"quantity": 2,
+	"unit_price": "18.50",
+	"price": "37.00"
+}
+
+19.	Customers can access previously added items in the cart
+
+http://127.0.0.1:8000/api/cart/menu-items/
+
+{
+    "menuitem": 2,
+    "quantity": 1
+}
+
+Response:
+
+{
+	"id": 2,
+	"menuitem": 2,
+	"quantity": 1,
+	"unit_price": "5.00",
+	"price": "5.00"
+}
+
+Here for a given cart, two cart-items got created, when order gets palced, both will be appended.
+
+20.	Customers can place orders
+
+http://127.0.0.1:8000/api/orders/
+
+Request Body:
+{}
+
+Response:
+
+{
+	"id": 1,
+	"user": 6,
+	"delivery_crew": null,
+	"status": false,
+	"total": "42.00",
+	"date": "2026-10-02",
+	"items": [
+		{
+			"id": 1,
+			"menuitem": {
+				"id": 5,
+				"title": "Chicken Parmigiana",
+				"price": "18.50",
+				"category": {
+					"id": 2,
+					"slug": "main-course",
+					"title": "Main Course"
+				},
+				"featured": true
+			},
+			"quantity": 2,
+			"unit_price": "18.50",
+			"price": "37.00"
+		},
+		{
+			"id": 2,
+			"menuitem": {
+				"id": 2,
+				"title": "Garlic Bread",
+				"price": "5.00",
+				"category": {
+					"id": 1,
+					"slug": "appetizers",
+					"title": "Appetizers"
+				},
+				"featured": false
+			},
+			"quantity": 1,
+			"unit_price": "5.00",
+			"price": "5.00"
+		}
+	]
+}
+
+
+21.	Customers can browse their own orders
+
+http://127.0.0.1:8000/api/orders/1/
+
+Important: Since Order were placed, cart should become empty
+
+GET: 
+http://127.0.0.1:8000/api/cart/menu-items/
+{
+	"count": 0,
+	"next": null,
+	"previous": null,
+	"results": []
+}
+
+
+
+8.	Managers can assign orders to the delivery crew
+Admin/Manager: 6e06b81092951b0b3e1386cea29ee570bce5040e
+
+
+PATCH: 
+http://127.0.0.1:8000/api/orders/1/
+
+ID of testuser01:
+{
+			"id": 5,
+			"username": "testuser01",
+			"email": ""
+		}
+
+Request:
+
+{	
+
+	"delivery_crew": 5
+}
+
+Reponse:
+
+{
+	"id": 1,
+	"user": 6,
+	"delivery_crew": {
+		"id": 5,
+		"username": "testuser01",
+		"email": ""
+	},
+	"status": false,
+	"total": "42.00",
+	"date": "2026-10-02",
+	"items": [
+		{
+			"id": 1,
+			"menuitem": {
+				"id": 5,
+				"title": "Chicken Parmigiana",
+				"price": "18.50",
+				"category": {
+					"id": 2,
+					"slug": "main-course",
+					"title": "Main Course"
+				},
+				"featured": true
+			},
+			"quantity": 2,
+			"unit_price": "18.50",
+			"price": "37.00"
+		},
+		{
+			"id": 2,
+			"menuitem": {
+				"id": 2,
+				"title": "Garlic Bread",
+				"price": "5.00",
+				"category": {
+					"id": 1,
+					"slug": "appetizers",
+					"title": "Appetizers"
+				},
+				"featured": false
+			},
+			"quantity": 1,
+			"unit_price": "5.00",
+			"price": "5.00"
+		}
+	]
+}
+
+
+9.	The delivery crew can access orders assigned to them
+
+auth: 9482e588a68a4f3b84aeca6c6d487426468d9b59
+
+GET:
+http://127.0.0.1:8000/api/orders/
+
+Same as Above
+
+	"results": [
+		{
+			"id": 1,
+			"user": 6,
+			"delivery_crew": {
+				"id": 5,
+				"username": "testuser01",
+				"email": ""
+			},
+			"status": false,
+			"total": "42.00",
+			"date": "2026-10-02",
+
+10.	The delivery crew can update an order as delivered
+auth: 9482e588a68a4f3b84aeca6c6d487426468d9b59
+
+PATCH:
+http://127.0.0.1:8000/api/orders/1/
+
+Request Body
+
+{
+	"status": true
+}
+
+
+Response:
+
+{
+	"id": 1,
+	"user": 6,
+	"delivery_crew": {
+		"id": 5,
+		"username": "testuser01",
+		"email": ""
+	},
+	"status": true,
+	"total": "42.00",
+	"date": "2026-10-02",
+
+}
